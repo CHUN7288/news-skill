@@ -1,0 +1,23 @@
+{
+  "skill_name": "news",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/news",
+      "expected_output": "今日經濟日曆，依時間排序，格式為 HH:MM CURRENCY-EventName，包含符合關鍵字或高影響力條件的事件",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "幫我看看今天有哪些重要的財經新聞/數據",
+      "expected_output": "觸發 /news 邏輯，抓取今日 ForexFactory 日曆並篩選輸出",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "/news 今天有沒有 Fed 相關的事件？",
+      "expected_output": "抓取日曆後列出所有符合條件的事件，並特別標示 USD 相關的 Fed 事件（若有）",
+      "files": []
+    }
+  ]
+}
