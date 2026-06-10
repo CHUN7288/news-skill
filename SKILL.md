@@ -44,7 +44,7 @@ https://www.myfxbook.com/forex-economic-calendar
 **存取注意事項：**
 - Myfxbook 封鎖 WebFetch（回傳 403），**必須使用 Playwright**
 - 若 Playwright 未安裝，在輸出中明確標示「Myfxbook：無法存取（需安裝 Playwright）」，不可靜默略過
-- **Myfxbook filter 解法（必做）**：頁面初次載入後預設只顯示約 15 個主要國家事件（約 62 筆）。必須在頁面載入後執行 `location.reload(true)` 強制重載，讓 `loggedOffCalendar` cookie（含所有貨幣清單）生效，重載後事件數會增至 120+ 筆，HUF、SCR 等非主要貨幣事件才會出現
+- **Myfxbook 貨幣覆蓋範圍（已知限制）**：頁面為全 SSR，`domcontentloaded` 時所有事件已在 DOM，約 318 筆。匿名用戶的 SSR 僅含 9 大貨幣（AUD、CAD、CHF、CNY、EUR、GBP、JPY、NZD、USD）。`loggedOffCalendar` cookie 是純 client-side UI 過濾，`location.reload(true)` 會讓頁面 JS 重置 cookie 為空陣列——兩者均無法讓 server 回傳 KRW 等非主要貨幣事件。若 KRW 事件缺失，需先在 Playwright 瀏覽器中**登入 Myfxbook 帳號**。
 - Myfxbook 時間已為 **GMT+8**，無需額外轉換（已驗證：CAD Employment 20:30、ECB Lagarde 15:00 均與 ForexFactory 換算結果吻合）
 
 ## 篩選邏輯
@@ -169,10 +169,11 @@ ForexFactory：
 
 Myfxbook：
 1. 用 Playwright 導航至 `https://www.myfxbook.com/forex-economic-calendar`
-2. **執行 `location.reload(true)` 強制重載**，等待頁面完成載入
+2. 等待頁面載入完成（`domcontentloaded` 後所有事件已在 DOM，勿執行 `location.reload()` — 會重置 cookie 讓 session 報廢）
 3. 用 JavaScript 提取所有含**目標日期**的事件文字（`tomorrow` 模式需識別明日日期區塊）
-4. 驗證事件數量是否達 100+ 筆（若仍只有 60 餘筆，表示 reload 未生效，需重試）
-5. 套用相同篩選邏輯 A、A2、A-USD、B（時間已為 GMT+8，無需轉換）
+4. 套用相同篩選邏輯 A、A2、A-USD、B（時間已為 GMT+8，無需轉換）
+
+> ⚠️ **KRW 等非主要貨幣不會出現（已知限制）**：匿名 SSR 只含 9 大貨幣。若需 KRW Unemployment Rate 等事件，必須先在 Playwright 瀏覽器中登入 Myfxbook 帳號，不可嘗試用 cookie 操作繞過。
 
 > ⚠️ **Myfxbook 日期驗證（必做，防止跨日誤抓）：**
 > Myfxbook 以 UTC 日期決定事件歸屬的 date header，但顯示時間已轉 GMT+8。UTC 日期是目標日（如 May 11）但 GMT+8 顯示為隔日（如 May 12, 05:00）的事件，會被塞在目標日的 header 區段下，卻屬於隔日事件。
