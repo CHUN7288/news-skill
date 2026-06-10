@@ -1,6 +1,6 @@
 ---
 name: news
-description: 抓取外匯經濟日曆，篩選對 XAUUSD（黃金）高影響力的事件並依時間列出。使用 /news 觸發（預設今日全天）、/news today（今日 06:00–22:00 GMT+8）、/news tomorrow（明日 04:00–22:00 GMT+8）。當用戶輸入 /news 系列指令時立即執行，無需額外說明或確認。資料來源為 ForexFactory JSON API 與 Myfxbook，自動套用 XAUUSD 篩選邏輯。
+description: 抓取外匯經濟日曆，篩選對 XAUUSD（黃金）高影響力的事件並依時間列出。使用 /news 觸發（預設今日全天）、/news-today（今日 06:00–22:00 GMT+8）、/news-tomorrow（明日 04:00–22:00 GMT+8）。當用戶輸入 /news 系列指令時立即執行，無需額外說明或確認。資料來源為 ForexFactory JSON API 與 Myfxbook，自動套用 XAUUSD 篩選邏輯。
 ---
 
 # /news — XAUUSD 高影響力經濟日曆
@@ -10,8 +10,8 @@ description: 抓取外匯經濟日曆，篩選對 XAUUSD（黃金）高影響力
 | 指令 | 目標日期 | GMT+8 時間範圍 |
 |------|----------|----------------|
 | `/news` | 今日 | 全天（無限制） |
-| `/news today` | 今日 | 06:00 – 22:00 |
-| `/news tomorrow` | 明日 | 04:00 – 22:00 |
+| `/news-today` | 今日 | 06:00 – 22:00 |
+| `/news-tomorrow` | 明日 | 04:00 – 22:00 |
 
 - **目標日期**：決定從哪一天篩選事件（ForexFactory `date` 欄位；Myfxbook 日期區塊）
 - **GMT+8 時間範圍**：時區轉換後才套用，在輸出前過濾掉範圍外的事件
@@ -25,7 +25,7 @@ description: 抓取外匯經濟日曆，篩選對 XAUUSD（黃金）高影響力
 ```
 https://nfs.faireconomy.media/ff_calendar_thisweek.json
 ```
-回傳本週所有事件，篩選 `date` 欄位等於**目標日期**（`/news` 與 `/news today` 為今日；`/news tomorrow` 為明日）。欄位對照：
+回傳本週所有事件，篩選 `date` 欄位等於**目標日期**（`/news` 與 `/news-today` 為今日；`/news-tomorrow` 為明日）。欄位對照：
 - `date` — 事件日期
 - `time` — 時間（ET，格式如 `8:30am`）
 - `currency` — 貨幣代碼（USD、EUR 等）
@@ -38,8 +38,8 @@ https://nfs.faireconomy.media/ff_calendar_thisweek.json
 https://www.myfxbook.com/forex-economic-calendar
 ```
 用 Playwright 開啟，提取**目標日期**的事件後套用篩選。
-- `/news` 與 `/news today`：提取今日事件
-- `/news tomorrow`：提取明日事件（識別明日日期的區塊）
+- `/news` 與 `/news-today`：提取今日事件
+- `/news-tomorrow`：提取明日事件（識別明日日期的區塊）
 
 **存取注意事項：**
 - Myfxbook 封鎖 WebFetch（回傳 403），**必須使用 Playwright**
@@ -214,8 +214,8 @@ Myfxbook：
 
 標題依模式變化：
 - `/news` → `📅 今日 XAUUSD 高影響力事件（YYYY-MM-DD）`
-- `/news today` → `📅 今日 XAUUSD 高影響力事件（YYYY-MM-DD，06:00–22:00 GMT+8）`
-- `/news tomorrow` → `📅 明日 XAUUSD 高影響力事件（YYYY-MM-DD，04:00–22:00 GMT+8）`
+- `/news-today` → `📅 今日 XAUUSD 高影響力事件（YYYY-MM-DD，06:00–22:00 GMT+8）`
+- `/news-tomorrow` → `📅 明日 XAUUSD 高影響力事件（YYYY-MM-DD，04:00–22:00 GMT+8）`
 
 ```
 📅 今日 XAUUSD 高影響力事件（YYYY-MM-DD）
