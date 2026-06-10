@@ -44,8 +44,13 @@ https://www.myfxbook.com/forex-economic-calendar
 **存取注意事項：**
 - Myfxbook 封鎖 WebFetch（回傳 403），**必須使用 Playwright**
 - 若 Playwright 未安裝，在輸出中明確標示「Myfxbook：無法存取（需安裝 Playwright）」，不可靜默略過
-- **Myfxbook 貨幣覆蓋範圍（已知限制）**：頁面為全 SSR，`domcontentloaded` 時所有事件已在 DOM，約 318 筆。匿名用戶的 SSR 僅含 9 大貨幣（AUD、CAD、CHF、CNY、EUR、GBP、JPY、NZD、USD）。`loggedOffCalendar` cookie 是純 client-side UI 過濾，`location.reload(true)` 會讓頁面 JS 重置 cookie 為空陣列——兩者均無法讓 server 回傳 KRW 等非主要貨幣事件。若 KRW 事件缺失，需先在 Playwright 瀏覽器中**登入 Myfxbook 帳號**。
-- Myfxbook 時間已為 **GMT+8**，無需額外轉換（已驗證：CAD Employment 20:30、ECB Lagarde 15:00 均與 ForexFactory 換算結果吻合）
+- Myfxbook 時間已為 **GMT+8**，無需額外轉換
+- **⚠️ KRW 等非主要貨幣缺失時的修復方法（一次性設定）：**
+  1. 點擊 `#filterButton`（Filter 圖示）
+  2. 在貨幣清單中勾選 KRW（或點 "All" 全選）
+  3. 用 Playwright native click 點擊 `#calendar-settings-apply`（JS `.click()` 無效，必須用 `page.locator('#calendar-settings-apply').click()`）
+  4. 等待 4 秒讓頁面重載
+  5. 設定會永久保存在 Playwright browser session 中，之後每次 navigate 都自動包含 KRW
 
 ## 篩選邏輯
 
@@ -169,18 +174,19 @@ ForexFactory：
 
 Myfxbook：
 1. 用 Playwright 導航至 `https://www.myfxbook.com/forex-economic-calendar`
-2. 等待頁面載入完成（`domcontentloaded` 後所有事件已在 DOM，勿執行 `location.reload()` — 會重置 cookie 讓 session 報廢）
-3. 用 JavaScript 提取所有含**目標日期**的事件文字（`tomorrow` 模式需識別明日日期區塊）
-4. 套用相同篩選邏輯 A、A2、A-USD、B（時間已為 GMT+8，無需轉換）
+2. 等待 `tr.economicCalendarRow` 出現（頁面為動態 JS 載入，需等約 5–8 秒）
+3. 用 JavaScript 提取事件，**欄位對應（新版頁面設計）：**
+   ```javascript
+   const rows = document.querySelectorAll('tr.economicCalendarRow');
+   // tds[0] = 日期時間（格式 "Jun 11, 07:00"，已為 GMT+8）
+   // tds[3] = 貨幣（"KRW"）
+   // tds[4] = 事件名稱
+   // tds[5] = 影響力（"HIGH"/"MEDIUM"/"LOW"/"NONE"）
+   ```
+4. **日期篩選（必做）：** `tds[0].innerText` 格式為 "Jun 11, 07:00"，先驗證日期部分（"Jun 11"）與目標日期吻合，再取 HH:MM，不符的事件一律丟棄
+5. 套用相同篩選邏輯 A、A2、A-USD、B（時間已為 GMT+8，無需轉換）
 
-> ⚠️ **KRW 等非主要貨幣不會出現（已知限制）**：匿名 SSR 只含 9 大貨幣。若需 KRW Unemployment Rate 等事件，必須先在 Playwright 瀏覽器中登入 Myfxbook 帳號，不可嘗試用 cookie 操作繞過。
-
-> ⚠️ **Myfxbook 日期驗證（必做，防止跨日誤抓）：**
-> Myfxbook 以 UTC 日期決定事件歸屬的 date header，但顯示時間已轉 GMT+8。UTC 日期是目標日（如 May 11）但 GMT+8 顯示為隔日（如 May 12, 05:00）的事件，會被塞在目標日的 header 區段下，卻屬於隔日事件。
->
-> **提取規則：** 從 `calendarDateTd` 取完整 innerText（格式 "May 11, 09:30"），**先驗證日期部分（"May 11"）與目標日期吻合**，再取 HH:MM 部分。顯示日期不符的事件一律丟棄，不論它在哪個 date header 區段下。
->
-> **範例錯誤（需丟棄）：** `dateAttr="2026-05-11 21:00"` 但 `innerText="May 12, 05:00"` → 顯示是 May 12，丟棄。
+> 若 KRW 未出現，依上方「KRW 缺失時的修復方法」做一次性 Filter 設定。
 
 **步驟二：合併去重**
 
