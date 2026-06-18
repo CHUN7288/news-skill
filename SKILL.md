@@ -54,31 +54,30 @@ https://www.myfxbook.com/forex-economic-calendar
 
 ## 篩選邏輯
 
-### A. 所有貨幣 — 關鍵字匹配（演講類除外）
+### A. 所有貨幣 — 關鍵字匹配（演講類與 Press Conference 除外）
 事件名稱（`title`，不分大小寫）含以下任一關鍵字，**不論貨幣、不論影響力**，一律納入：
 
-| 關鍵字 |
-|--------|
-| interest rate |
-| press conference |
-| CPI |
-| inflation |
-| GDP |
-| growth rate |
-| PCE |
-| PMI |
-| unemployment |
-| employment |
-| employ |
-| unemploy |
+| 關鍵字 | 備注 |
+|--------|------|
+| interest rate | |
+| CPI | |
+| inflation | **⚠️ 例外：title 含 `inflation expectation`（不分大小寫）者，一律排除，不納入** |
+| GDP | |
+| growth rate | |
+| PCE | |
+| PMI | |
+| unemployment | |
+| employment | |
+| employ | 字根，涵蓋 employment、employed 等 |
+| unemploy | 字根，涵蓋 unemployment、unemployed 等 |
 
-### A2. 演講類（speech / speaks）篩選規則
-演講類事件（事件名稱含 `speech` 或 `speaks`，不分大小寫）適用以下專屬規則，**不套用 A 的一般邏輯**：
+### A2. 演講類 & Press Conference 篩選規則
+事件名稱含 `speech`、`speaks` 或 `press conference`（不分大小寫）時，**不套用 Rule A 的一般邏輯**，改套用以下專屬規則：
 
 | 貨幣 | 納入條件 |
 |------|----------|
-| USD | 所有演講，不論影響力 |
-| AUD、CAD、EUR、GBP | 僅 `impact == "High"` 的演講 |
+| USD | 所有此類事件，不論影響力 |
+| AUD、CAD、EUR、GBP | 僅 `impact == "High"` |
 | 其他貨幣（CHF、JPY 等） | 一律排除 |
 
 ### A-USD. USD 專屬關鍵字（演講類除外）
@@ -115,9 +114,9 @@ https://www.myfxbook.com/forex-economic-calendar
 
 ## 輸出格式規則
 
-### 1. 同時間事件：只顯示一條代表，演講全列
+### 1. 同時間事件：只顯示一條代表，演講與 Press Conference 全列
 相同時間有多個符合條件的事件時，**只顯示其中一條作為代表**（任選），其餘省略。
-**例外：演講類事件（title 含 `speech` 或 `speaks`）不受此限，所有符合 A2 規則的演講都必須完整列出。**
+**例外：符合 A2 規則的演講（speech / speaks）及 Press Conference 事件，不受此限，所有符合條件者都必須完整列出。**
 
 時間欄位只填一次，後續同時間事件留空對齊。
 
@@ -140,8 +139,8 @@ Tent. 事件（若有）
 有具體時間的事件（依 GMT+8 時間升冪排列）
 ```
 
-### 3. 演講類事件名稱前加 `***`
-符合 A2 演講規則而納入的事件，在事件名稱前加上 `***`。
+### 3. 演講類 & Press Conference 事件名稱前加 `***`
+符合 A2 規則而納入的演講（speech / speaks）及 Press Conference 事件，在事件名稱前加上 `***`。
 
 **示範：**
 ```
